@@ -12,6 +12,38 @@ MOBILE NVARCHAR2(20)             -- VARCHAR2(20)
 );
 
 DROP TABLE USERTBL;
+
+-- select(+서브쿼리,조인) + DML(insert, update, delete)
+-- 전체조회
+select * from usertbl;
+-- 개별조회(특정번호,특정이름...)
+-- 여러행이 나오는 상태냐? , 하나의 행이 나오는 상태냐?
+select * from userTbl where no=1;
+select * from userTbl where username='홍길동';
+
+-- like : _ or % 같이 사용
+select * from userTbl where username LIKE '%홍길동'; -- 홍길동으로 끝나는 
+select * from userTbl where username LIKE '%길동%'; -- 앞 뒤 상관없이 길동만
+select * from userTbl where username LIKE '_길동%'; -- 앞 뒤 상관없이 길동만
+
+-- insert into 테이블명(필드명1,필드명2..)
+-- value()
+
+-- update 테이블명 
+-- set 업데이트 할 필드명=값,업데이트 할 필드명=값......
+-- where 조건
+
+-- delete 테이블 명 where 조건 (from 생략가능)
+
+-- delete from 테이블 명 where 조건
+
+
+
+
+
+
+
+
 -- 시퀀스 생성
 -- USER_SEQ생성(기본)
 CREATE SEQUENCE USER_SEQ;
