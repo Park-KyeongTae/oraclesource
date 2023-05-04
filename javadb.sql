@@ -1,140 +1,516 @@
+javadb.sql
 -- javadb
 
--- USERTBL 테이블 생성
--- NO(번호-숫자(4)), USERNAME(이름-한글(4), BIRTHYEAR(년도-숫자(4)), ADDR(주소-문자(한글,숫자)), MOBILE(010-1234-1234)
--- NO PK 제약조건 지정(제약조건명 pk_userTBL)
-CREATE TABLE userTBL(
-NO NUMBER(4) CONSTRAINT pk_userTBL PRIMARY KEY,
-USERNAME NVARCHAR2(10) NOT NULL, -- VARCHAR2(20)
-BIRTHYEAR NUMBER(4) NOT NULL,
-ADDR NVARCHAR2(50) NOT NULL,     -- VARCHAR2(50)
-MOBILE NVARCHAR2(20)             -- VARCHAR2(20)
-);
+-- userTBL 테이블 생성
+-- no(번호-숫자(4)), username(이름-한글(4)), birthYear(년도-숫자(4)), addr(주소-문자(한글,숫자)), mobile(010-1234-1234)
+-- no pk 제약조건 지정(제약조건명 pk_userTBL)
 
-DROP TABLE USERTBL;
+CREATE TABLE usertbl (
+    no        NUMBER(4)
+        CONSTRAINT pk_usertbl PRIMARY KEY,
+    username  NVARCHAR2(10) NOT NULL,  -- varchar2(20)
+    birthyear NUMBER(4) NOT NULL,
+    addr      NVARCHAR2(50) NOT NULL,      -- varchar2(50)
+    mobile    NVARCHAR2(20)
+);            -- varchar2(20)
 
--- select(+서브쿼리,조인) + DML(insert, update, delete)
+DROP TABLE usertbl;
+
+
+-- select(+서브쿼리,조인) + DML(insert,delete,update)
 -- 전체조회
-select * from usertbl;
--- 개별조회(특정번호,특정이름...)
--- 여러행이 나오는 상태냐? , 하나의 행이 나오는 상태냐?
-select * from userTbl where no=1;
-select * from userTbl where username='홍길동';
+SELECT
+    *
+FROM
+    usertbl;
 
--- like : _ or % 같이 사용
-select * from userTbl where username LIKE '%홍길동'; -- 홍길동으로 끝나는 
-select * from userTbl where username LIKE '%길동%'; -- 앞 뒤 상관없이 길동만
-select * from userTbl where username LIKE '_길동%'; -- 앞 뒤 상관없이 길동만
+-- 개별조회(특정번호, 특정이름...)
+-- 여러행이 나오는 상태냐? 하나의 행이 결과로 나올것이냐?
+SELECT
+    *
+FROM
+    usertbl
+WHERE
+    no = 1;
 
--- insert into 테이블명(필드명1,필드명2..)
--- value()
+SELECT
+    *
+FROM
+    usertbl
+WHERE
+    username = '홍길동';
 
--- update 테이블명 
--- set 업데이트 할 필드명=값,업데이트 할 필드명=값......
--- where 조건
+-- like : _ or %
+SELECT
+    *
+FROM
+    usertbl
+WHERE
+    username LIKE '_길동%';
 
--- delete 테이블 명 where 조건 (from 생략가능)
+--insert into 테이블명(필드명1,필드명2..)
+--values();
 
--- delete from 테이블 명 where 조건
+--update 테이블명
+--set 업데이트할 필드명=값, 업데이트할 필드명=값,.....
+--where 조건;
 
+--delete 테이블명 where 조건
 
-
-
-
-
+--delete from 테이블명 where 조건
 
 
 -- 시퀀스 생성
--- USER_SEQ생성(기본)
-CREATE SEQUENCE USER_SEQ;
+-- user_seq 생성(기본)
+
+CREATE SEQUENCE user_seq;
 
 
--- INSTERT 
--- NO : USER_SEQ
-INSERT INTO USERTBL (NO, USERNAME, BIRTHYEAR,ADDR,MOBILE)
-VALUES(USER_SEQ.NEXTVAL,'홍길동',2010,'서울시 종로구 123','010-1234-5678');
+-- insert
+-- no : user_seq 값 넣기
+INSERT INTO usertbl (
+    no,
+    username,
+    birthyear,
+    addr,
+    mobile
+) VALUES (
+    user_seq.NEXTVAL,
+    '홍길동',
+    2010,
+    '서울시 종로구 123',
+    '010-1234-5678'
+);
 
 COMMIT;
 
+-- 모든 컬럼 not null
 
+-- paytype : pay_no(숫자-1 pk), info(문자-card, cash)
+-- paytype_seq 생성
 
-
--- 모든 칼럼 NOT NULL
--- SHOP
-
--- PAYTYPE : PAYNO(숫자(1)PK), INFO(문자(4))
-CREATE TABLE PAYTYPE (
-PAY_NO NUMBER(1) PRIMARY KEY ,
-INFO VARCHAR2(10) NOT NULL
+CREATE TABLE paytype (
+    pay_no NUMBER(1) PRIMARY KEY,
+    info   VARCHAR2(10) NOT NULL
 );
 
--- PAYTYPE_SEQ
-CREATE SEQUENCE PAYTYPE_SEQ;
+CREATE SEQUENCE paytype_seq;
 
-INSERT INTO PAYTYPE VALUES(paytype_seq.nextval,'CARD');
-INSERT INTO PAYTYPE VALUES(paytype_seq.nextval,'CASH');
-
-SELECT * FROM PAYTYPE;
-
--- SUSER : USER_ID(숫자(4)PK), NAME(문자(한글)), PAYNO(숫자(1)) :  PAYTYPE 테이블에 있는 PAY_NO 참조 해서 사용)
-CREATE TABLE SUSER (
-USER_ID NUMBER(4) PRIMARY KEY,
-NAME VARCHAR2(20) NOT NULL,
-PAY_NO NUMBER(1) NOT NULL REFERENCES PAYTYPE(PAY_NO)
-);
--- PRODUCT 
--- PRODUCT_ID(숫자(8)PK), PNAME(문자(50)),PRICE(숫자(10), CONTENT(문자(50))
-CREATE TABLE PRODUCT(
-PRODUCT_ID NUMBER(8) PRIMARY KEY,
-PNAME VARCHAR2(30) NOT NULL,
-PRICE NUMBER(8)NOT NULL,
-CONTENT VARCHAR2(50) NOT NULL
+INSERT INTO paytype VALUES (
+    paytype_seq.NEXTVAL,
+    'card'
 );
 
-CREATE SEQUENCE PRODUCTE_SEQ;
--- SORDER
--- ORDER_ID(숫자(8)PK),USER_ID(USER 테이블의 USER_ID 참조),PRODUCT_ID(PRODUCT 테이블의 PRODUCT_ID 참조)
-CREATE TABLE SORDER(
-ORDER_ID NUMBER(8) PRIMARY KEY,
-USER_ID NUMBER(4) NOT NULL REFERENCES SUSER(USER_ID),
-PRODUCT_ID NUMBER(8) NOT NULL REFERENCES PRODUCT(PRODUCT_ID)
+INSERT INTO paytype VALUES (
+    paytype_seq.NEXTVAL,
+    'cash'
 );
-
-ALTER TABLE SORDER ADD ORDER_DATE DATE; -- 구매날짜
--- SORDER_SEQ 생성
-CREATE SEQUENCE SORDER_SEQ;
-
--- user_id, name, pay_no, info 조회
 
 SELECT
-    s.user_id,
-    s.name,
-    s.pay_no,
-    p.info
+    *
 FROM
-    suser   s,
+    paytype; -- 1 : card, 2 : cash
+
+-- suser : user_id(숫자-4 pk) , name(문자-한글), pay_no(숫자-1 : paytype 테이블에 있는 pay_no 참조 해서 사용)
+CREATE TABLE suser (
+    user_id NUMBER(4) PRIMARY KEY,
+    name    VARCHAR2(20) NOT NULL,
+    pay_no  NUMBER(1) NOT NULL
+        REFERENCES paytype ( pay_no )
+);
+
+SELECT
+    *
+FROM
+    suser;
+
+-- product
+-- product_id(숫자-8 pk), pname(문자), price(숫자), content(문자)
+CREATE TABLE product (
+    product_id NUMBER(8) PRIMARY KEY,
+    pname      VARCHAR2(30) NOT NULL,
+    price      NUMBER(8) NOT NULL,
+    content    VARCHAR2(50) NOT NULL
+);
+
+CREATE SEQUENCE product_seq;
+
+-- sorder
+-- order_id(숫자-8 pk), user_id(user 테이블의 user_id 참조), product_id(product 테이블의 product_id 참조)
+-- order_seq 생성
+
+CREATE TABLE sorder (
+    order_id   NUMBER(8) PRIMARY KEY,
+    user_id    NUMBER(4) NOT NULL
+        REFERENCES suser ( user_id ),
+    product_id NUMBER(8) NOT NULL
+        REFERENCES product ( product_id )
+);
+
+ALTER TABLE sorder ADD order_date DATE; -- 구매날짜
+
+CREATE SEQUENCE order_seq;
+
+--INSERT INTO sorder VALUES(order_seq.nextval,물건을 구매한id,상품id,sysdate);
+
+DELETE product
+WHERE
+    product_id = 1001;
+
+SELECT
+    *
+FROM
+    sorder;
+
+COMMIT;
+
+SELECT
+    *
+FROM
+    suser   u,
     paytype p
 WHERE
-    s.pay_no = p.pay_no;
+    u.pay_no = p.pay_no;
+
+SELECT
+    u.user_id,
+    u.name,
+    u.pay_no,
+    t.info,
+    p.product_id,
+    p.pname,
+    p.price,
+    p.content,
+    s.order_date
+FROM
+    suser   u,
+    sorder  s,
+    product p,
+    paytype t
+WHERE
+        s.user_id = u.user_id
+    AND u.pay_no = t.pay_no
+    AND s.product_id = p.product_id;
+
+
+-- 도서 테이블
+-- code, title, writer, price
+-- code : 1001(pk)
+-- title : '자바의 신' (varchar2 or nvarchar2 ==> 한글 varchar2 : 한글 3byte 처리, nvarchar2 : 한글 문자 갯수만큼)
+-- writer : '홍길동'
+-- price : 25000
+
+-- bookTBL 테이블 생성
+CREATE TABLE booktbl (
+    code   NUMBER(4) PRIMARY KEY,  -- not null+unique
+    title  NVARCHAR2(50) NOT NULL,
+    writer NVARCHAR2(20) NOT NULL,
+    price  NUMBER(8) NOT NULL
+);
+
+INSERT INTO booktbl (
+    code,
+    title,
+    writer,
+    price
+) VALUES (
+    1001,
+    '이것이 자바다',
+    '신용균',
+    25000
+);
+
+INSERT INTO booktbl (
+    code,
+    title,
+    writer,
+    price
+) VALUES (
+    1002,
+    '자바의 신',
+    '강신용',
+    28000
+);
+
+INSERT INTO booktbl (
+    code,
+    title,
+    writer,
+    price
+) VALUES (
+    1003,
+    '오라클로 배우는 데이터베이스',
+    '이지훈',
+    28000
+);
+
+INSERT INTO booktbl (
+    code,
+    title,
+    writer,
+    price
+) VALUES (
+    1004,
+    '자바 1000제',
+    '김용만',
+    29000
+);
+
+INSERT INTO booktbl (
+    code,
+    title,
+    writer,
+    price
+) VALUES (
+    1005,
+    '자바 프로그래밍 입문',
+    '박은종',
+    30000
+);
+
+COMMIT;
+
+ALTER TABLE booktbl ADD description NVARCHAR2(100);
+
+UPDATE booktbl
+SET
+    description = '자바로 '
+WHERE
+    code = 1004;
+
+
+-- member 테이블 (membertbl) not null
+-- userid (영어,숫자,특수문자) 최대 12 허용, pk
+-- password (영어,숫자,특수문자) 최대 15 허용
+-- name (한글) 
+-- gender (한글-남 or 여)
+-- email 
+CREATE TABLE membertbl (
+    userid   VARCHAR2(15) PRIMARY KEY,
+    password VARCHAR2(20) NOT NULL,
+    name     NVARCHAR2(10) NOT NULL,
+    gender   NVARCHAR2(2) NOT NULL,
+    email    VARCHAR2(50) NOT NULL
+);
+
+INSERT INTO membertbl VALUES (
+    'hong123',
+    'hong123@',
+    '홍길동',
+    '남',
+    'hong123@gmail.com'
+);
+
+COMMIT;
+
+SELECT
+    COUNT(*)
+FROM
+    membertbl
+WHERE
+    userid = 'kim123@';
+
+-- 게시판 board
+-- 글번호(bno, 숫자, 시퀀스 삽입, pk(pk_board 제약조건명), 작성자(name, 한글), 비밀번호(password, 숫자,영문자), 제목(title, 한글),
+-- 내용(content, 한글), 파일첨부(attach, 파일명), 답변글 작성시 참조되는 글번호(re_ref, 숫자), 답변글 레벨(re_lev 숫자),
+-- 답변글 순서(re_seq, 숫자)
+-- 조회수(cnt, 숫자, default 0 지정), 작성날짜(regdate, default 로 sysdate 지정)
+
+CREATE TABLE board (
+    bno      NUMBER(8)
+        CONSTRAINT pk_board PRIMARY KEY,
+    name     NVARCHAR2(10) NOT NULL,
+    password VARCHAR2(20) NOT NULL,
+    title    NVARCHAR2(50) NOT NULL,
+    content  NVARCHAR2(1000) NOT NULL,
+    attach   NVARCHAR2(100),
+    re_ref   NUMBER(8) NOT NULL,
+    re_lev   NUMBER(8) NOT NULL,
+    re_seq   NUMBER(8) NOT NULL,
+    cnt      NUMBER(8) DEFAULT 0,
+    regdate  DATE DEFAULT sysdate
+);
+
+-- 시퀀스 생성 board_seq 
+CREATE SEQUENCE board_seq;
+
+SELECT
+    *
+FROM
+    board;
+
+SELECT
+    *
+FROM
+    board
+WHERE
+    bno = 5;
+
+SELECT
+    *
+FROM
+    board
+WHERE
+    name = '홍길동';
+
+UPDATE board
+SET
+    title = '',
+    content = ''
+WHERE
+        bno = 3
+    AND password = '12345';
+
+UPDATE board
+SET
+    title = '',
+    content = '',
+    attach = ''
+WHERE
+        bno = 3
+    AND password = '12345';
+
+
+-- 서브쿼리
+
+INSERT INTO board (
+    bno,
+    name,
+    password,
+    title,
+    content,
+    re_ref,
+    re_lev,
+    re_seq
+)
+    (
+        SELECT
+            board_seq.NEXTVAL,
+            name,
+            password,
+            title,
+            content,
+            board_seq.CURRVAL,
+            re_lev,
+            re_seq
+        FROM
+            board
+    );
     
--- 주문목록 조회
-select * FROM SORDER;
+commit;
 
--- 주문목록 조회
--- USER_ID, NAME, CARD/CASH, PRODUCT_ID, PNAME, PRICE, CONTENT
 
--- 기준 : SORDER
--- SUSER 테이블 : NAME,
--- PAYTYPE 테이블 : CARD/CASH
--- PRODUCT 테이블 : PRODUCT_ID, PNAME, PRICE, CONTENT
+-- 댓글
+-- re_ref, re_lev, re_seq
 
--- 전체 주문목록
-SELECT U.USER_ID, U.NAME, T.INFO, S.PRODUCT_ID, P.PNAME, P.PRICE, P.CONTENT, S.ORDER_DATE
-FROM SORDER S, SUSER U , paytype T , PRODUCT P
-WHERE U.USER_ID = U.USER_ID AND U.PAY_NO = T.PAY_NO AND S.PRODUCT_ID = P.PRODUCT_ID;
+-- 원본글 작성 re_ref : bno 값과 동일
+--             re_lev : 0, re_seq : 0
 
--- 홍길동 주문목록 조회
-SELECT U.USER_ID, U.NAME, T.INFO, S.PRODUCT_ID, P.PNAME, P.PRICE, P.CONTENT, S.ORDER_DATE
-FROM SORDER S, SUSER U , paytype T , PRODUCT P
-WHERE U.USER_ID = U.USER_ID AND U.PAY_NO = T.PAY_NO AND S.PRODUCT_ID = P.PRODUCT_ID AND S.USER_ID = 1234;
+
+select bno, title, re_ref, re_lev, re_seq from board where bno=8193;
+
+-- re_ref : 그룹번호, re_seq : 그룹 내에서 댓글의 순서, 
+-- re_lev : 그룹 내에서 댓글의 깊이(원본글의 댓글인지? 댓글의 댓글인지?)
+
+-- 댓글도 새글임 => insert 작업
+--                  bno : board_seq.nextval
+--                  re_ref : 원본글의 re_ref 값과 동일
+--                  re_seq : 원본글의 re_seq + 1
+--                  re_lev : 원본글의 re_lev + 1
+
+
+-- 첫번째 댓글 작성
+insert into board(bno,name,password,title,content,attach,re_ref,re_lev,re_seq) 
+values(board_seq.nextval,'김댓글','12345','Re : 게시글','게시글 댓글',null,8193,1,1);
+
+commit;
+
+-- 가장 최신글과 댓글 가지고 오기(+ re_seq asc : 댓글의 최신)
+select bno, title, re_ref, re_lev, re_seq from board where re_ref=8193 order by re_seq;
+
+-- 두번째 댓글 작성
+-- re_seq 가 값이 작을수록 최신글임
+
+-- 기존 댓글이 있는가? 기존 댓글의 re_seq 변경을 한 후 insert 작업 해야 함
+
+-- update 구문에서 where => re_ref 는 원본글의 re_ref 값, re_seq 비교구문은 원본글의 re_seq 값과 비교
+
+update board set re_seq = re_seq + 1 where re_ref = 8193 and re_seq > 2;
+
+commit;
+
+insert into board(bno,name,password,title,content,attach,re_ref,re_lev,re_seq) 
+values(board_seq.nextval,'김댓글','12345','Re : 게시글2','게시글 댓글2',null,8193,1,1);
+
+
+-- 댓글의 댓글 작성
+-- update / insert
+
+update board set re_seq = re_seq + 1 where re_ref = 8193 and re_seq > 2;
+
+
+insert into board(bno,name,password,title,content,attach,re_ref,re_lev,re_seq) 
+values(board_seq.nextval,'김댓글','12345','ReRe : 게시글','댓글의 댓글',null,8193,2,3);
+
+
+-- 페이지 나누기
+-- rownum : 조회된 결과에 번호를 매겨줌
+--          order by 구문에 index 가 들어가지 않는다면 제대로 된 결과를 보장하지 않음
+--          pk 가 index로 사용됨
+
+
+select rownum, bno, title from board order by bno desc;
+
+select rownum, bno, title, re_ref, re_lev, re_seq 
+from board order by re_ref desc, re_seq asc;
+
+-- 해결
+-- order by 구문을 먼저 실행한 후 rownum 붙여야 함
+
+select rownum, bno, title, re_ref, re_lev, re_seq
+from (select bno, title, re_ref, re_lev, re_seq 
+      from board order by re_ref desc, re_seq asc)
+where rownum <= 30;
+
+-- 한 페이지에 30개의 목록을 보여준다 할 때
+-- 1 2 3 4 5 6 .......
+-- 1 page 요청 (1 ~ 30)
+-- 2 page 요청 (31 ~ 60)
+-- 3 page 요청 (61 ~ 90)
+
+select *
+from (select rownum rnum, bno, title, re_ref, re_lev, re_seq
+      from (select bno, title, re_ref, re_lev, re_seq 
+            from board order by re_ref desc, re_seq asc)
+      where rownum <= 90)
+where rnum > 60;
+
+
+select *
+from (select rownum rnum, bno, title, re_ref, re_lev, re_seq
+      from (select bno, title, re_ref, re_lev, re_seq 
+            from board order by re_ref desc, re_seq asc)
+      where rownum <= ?)
+where rnum > ?;
+
+-- 1 page : rnum > 0, rownum <= 30
+-- 2 page : rnum > 30, rownum <= 60
+-- 3 page : rnum > 60, rownum <= 90
+
+-- 1,2,3 
+-- rownum 값 : 페이지번호 * 한 페이지에 보여줄 목록 개수
+-- rnum 값 : (페이지번호-1) * 한 페이지에 보여줄 목록 개수
+
+
+
+select *
+from (select rownum rnum, bno, title, re_ref, re_lev, re_seq
+      from (select bno, title, re_ref, re_lev, re_seq 
+            from board order by re_ref desc, re_seq asc)
+      where rownum <= 90)
+where rnum > 60;
+
+commit!
+
+
 
