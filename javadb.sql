@@ -510,7 +510,8 @@ from (select rownum rnum, bno, title, re_ref, re_lev, re_seq
       where rownum <= 90)
 where rnum > 60;
 
-commit!
+commit;
 
+select count(*) from board;
 
 
