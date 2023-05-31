@@ -101,3 +101,6 @@ TEMPORARY TABLESPACE TEMP;
 GRANT CONNECT, RESOURCE TO TEST2;
 
 commit;
+
+
+alter user javadb quota unlimited on users;

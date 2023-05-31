@@ -514,4 +514,119 @@ commit;
 
 select count(*) from board;
 
+-- mybatis 연습용 테이블
+create table person(
+id varchar2(20) primary key,
+name varchar2(30) not null);
 
+
+insert into person values('king123','스윙스');
+insert into person values('park123','박경태');
+
+commit; 
+
+-- 트랜잭션 테스트 테이블
+-- 트랜잭션 : 하나의 업무에 여러개의 작은 업무들이 같이 묶여 있음 / 하나의 단위로 처리
+create table tbl_sample1(col1 varchar2(500));
+create table tbl_sample2(col1 varchar2(50));
+
+
+
+
+insert into spring_board(bno,title,content,writer) 
+(select seq_board.nextval,title,content,writer from spring_board);
+
+commit;
+
+-- 페이지 나누기(GET 방식)
+-- rownum : 조회된 결과에 번호를 매겨줌(order by 가 있어야 가능)
+-- spring_board : bno 가 pk 상황(order by 기준도 bno)
+-- 1 page : 가장 최신글 20개
+-- 2 page : 그 다음 최신글 20개
+insert into spring_board(bno,title,content,writer) 
+(select seq_board.nextval,title,content,writer from spring_board);
+
+commit;
+
+select count(*) from spring_board;
+
+-- 페이지 나누기를 할 때 필요한 sql 코드
+select *
+from (select rownum rn, bno, title, writer
+      from(select bno, title, writer from spring_board order by bno desc)
+      where rownum <= 20)
+where rn > 0;
+
+-- 오라클 힌트 사용
+select bno, title, writer, regdate, updatedate
+from (select /*+INDEX_DESC(spring_board pk_spring_board)*/ rownum rn, bno, title, writer, regdate, updatedate
+      from spring_board
+      where rownum <= 40)
+where rn > 20;
+
+
+-- 댓글 테이블 
+create table spring_reply(
+   rno number(10,0) constraint pk_reply primary key, -- 댓글 글번호
+   bno number(10,0) not null,                        -- 원본글 글번호
+   reply varchar2(1000) not null,                    -- 댓글 내용
+   replyer varchar2(50) not null,                    -- 댓글 작성자
+   replydate date default sysdate,                   -- 댓글 작성날짜
+   constraint fk_reply_board foreign key(bno) references spring_board(bno) -- 외래키 제약조건 
+);
+-- 댓글 테이블 수정 (컬럼 추가) uddatedate
+alter table spring_reply add updatedate date default sysdate;
+
+create sequence seq_reply;
+
+insert into  spring_reply(rno,bno,reply,replyer) values(seq_reply.nextval,2091,'베스트 댓글','테스트1');
+
+commit;
+
+-- spring_reply 인덱스 추가 설정
+create index idx_reply on spring_reply(bno desc, rno asc);
+
+select rno, bno, reply, replyer, replydate, updatedate
+from (select /*+INDEX(spring_reply idx_reply)*/ rownum rn, rno, bno, reply, replyer, replydate,updatedate
+      from spring_reply
+      where bno=2091 and rownum <= 10)
+where rn > 0;
+
+-- spring_board 에 컬럼 추가(댓글 수 저장)
+alter table spring_board add replycnt number default 0;
+
+-- 이미 들어간 댓글 수 삽입
+update spring_board
+set replycnt = (select count(rno) from spring_reply where spring_board.bno = spring_reply.bno);
+
+commit;
+
+select * from spring_board where bno = 2091;
+
+-- 파일첨부
+-- spring_attach
+-- uuid, uploadpath, filename, filetype
+create table spring_attach(
+ uuid varchar2(100) constraint pk_attach primary key,
+ uploadpath varchar2(200)not null,
+ filename varchar2(100)not null,
+ filetype char(1) default '1',
+ bno number(10,0)not null,
+ constraint fk_board_attach foreign key(bno) references spring_board(bno)
+)
+
+-- spring_board bno 와 spring_attach bno 일치 시 
+-- title, content, writer, bno, uuid, uploadpath, filetype, filename
+-- inner join
+ SELECT
+    title,
+    content,
+    writer,
+    sa.bno,
+    uuid,
+    uploadpath,
+    filetype,
+    filename
+FROM
+         spring_board sb
+    JOIN spring_attach sa ON sb.bno = sa.bno 
